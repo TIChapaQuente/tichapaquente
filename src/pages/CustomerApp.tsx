@@ -786,10 +786,10 @@ function CustomerApp() {
 
       {/* Checkout Modal */}
       {isCheckoutOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
-          <div className="bg-white rounded-lg p-6 w-full max-w-md">
-            <div className="flex justify-between items-center mb-6">
-              <h2 className="text-2xl font-bold text-red-800">Finalizar Pedido</h2>
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-lg p-4 w-full max-w-sm mx-auto">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-xl font-bold text-red-800">Finalizar Pedido</h2>
               <button
                 onClick={() => setIsCheckoutOpen(false)}
                 className="text-gray-500 hover:text-gray-700"
@@ -798,7 +798,7 @@ function CustomerApp() {
               </button>
             </div>
 
-            <form onSubmit={handleFinishOrder} className="space-y-4">
+            <form onSubmit={handleFinishOrder} className="space-y-3">
               <div>
                 <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
                   Nome
@@ -808,7 +808,7 @@ function CustomerApp() {
                   id="name"
                   value={checkoutForm.name}
                   onChange={(e) => setCheckoutForm({ ...checkoutForm, name: e.target.value })}
-                  className="w-full px-3 py-2 border rounded-lg focus:ring-orange-500 focus:border-orange-500"
+                  className="w-full px-3 py-1.5 border rounded-lg focus:ring-orange-500 focus:border-orange-500"
                   required
                 />
               </div>
@@ -822,57 +822,57 @@ function CustomerApp() {
                   id="phone"
                   value={checkoutForm.phone}
                   onChange={(e) => setCheckoutForm({ ...checkoutForm, phone: e.target.value })}
-                  className="w-full px-3 py-2 border rounded-lg focus:ring-orange-500 focus:border-orange-500"
+                  className="w-full px-3 py-1.5 border rounded-lg focus:ring-orange-500 focus:border-orange-500"
                   required
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 mb-1">
                   Tipo de Pedido
                 </label>
-                <div className="grid grid-cols-3 gap-4">
+                <div className="grid grid-cols-3 gap-2">
                   <button
                     type="button"
                     onClick={() => setCheckoutForm({ ...checkoutForm, deliveryType: 'delivery' })}
-                    className={`flex flex-col items-center justify-center p-4 border rounded-lg ${
+                    className={`flex flex-col items-center justify-center p-2 border rounded-lg ${
                       checkoutForm.deliveryType === 'delivery'
                         ? 'border-red-600 bg-red-100'
                         : 'border-gray-200'
                     }`}
                   >
-                    <Truck className={`w-6 h-6 ${
+                    <Truck className={`w-5 h-5 ${
                       checkoutForm.deliveryType === 'delivery' ? 'text-red-600' : 'text-gray-400'
                     }`} />
-                    <span className="mt-1 text-sm">Entrega</span>
+                    <span className="mt-0.5 text-xs">Entrega</span>
                   </button>
                   <button
                     type="button"
                     onClick={() => setCheckoutForm({ ...checkoutForm, deliveryType: 'pickup', address: '', tableNumber: '' })}
-                    className={`flex flex-col items-center justify-center p-4 border rounded-lg ${
+                    className={`flex flex-col items-center justify-center p-2 border rounded-lg ${
                       checkoutForm.deliveryType === 'pickup'
                         ? 'border-red-600 bg-red-100'
                         : 'border-gray-200'
                     }`}
                   >
-                    <Store className={`w-6 h-6 ${
+                    <Store className={`w-5 h-5 ${
                       checkoutForm.deliveryType === 'pickup' ? 'text-red-600' : 'text-gray-400'
                     }`} />
-                    <span className="mt-1 text-sm">Retirada</span>
+                    <span className="mt-0.5 text-xs">Retirada</span>
                   </button>
                   <button
                     type="button"
                     onClick={() => setCheckoutForm({ ...checkoutForm, deliveryType: 'table', address: '' })}
-                    className={`flex flex-col items-center justify-center p-4 border rounded-lg ${
+                    className={`flex flex-col items-center justify-center p-2 border rounded-lg ${
                       checkoutForm.deliveryType === 'table'
                         ? 'border-red-600 bg-red-100'
                         : 'border-gray-200'
                     }`}
                   >
-                    <UtensilsCrossed className={`w-6 h-6 ${
+                    <UtensilsCrossed className={`w-5 h-5 ${
                       checkoutForm.deliveryType === 'table' ? 'text-red-600' : 'text-gray-400'
                     }`} />
-                    <span className="mt-1 text-sm">Mesa</span>
+                    <span className="mt-0.5 text-xs">Mesa</span>
                   </button>
                 </div>
               </div>
@@ -886,7 +886,7 @@ function CustomerApp() {
                     id="address"
                     value={checkoutForm.address}
                     onChange={(e) => setCheckoutForm({ ...checkoutForm, address: e.target.value })}
-                    className="w-full px-3 py-2 border rounded-lg focus:ring-orange-500 focus:border-orange-500"
+                    className="w-full px-3 py-1.5 border rounded-lg focus:ring-orange-500 focus:border-orange-500"
                     rows={3}
                     required
                     placeholder="Digite seu endereço completo"
@@ -904,7 +904,7 @@ function CustomerApp() {
                     id="tableNumber"
                     value={checkoutForm.tableNumber}
                     onChange={(e) => setCheckoutForm({ ...checkoutForm, tableNumber: e.target.value })}
-                    className="w-full px-3 py-2 border rounded-lg focus:ring-orange-500 focus:border-orange-500"
+                    className="w-full px-3 py-1.5 border rounded-lg focus:ring-orange-500 focus:border-orange-500"
                     required
                     placeholder="Digite o número da mesa"
                     min="1"
@@ -920,7 +920,7 @@ function CustomerApp() {
                   id="observation"
                   name="observation"
                   rows={3}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500"
+                  className="w-full px-3 py-1.5 border border-gray-300 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500"
                   placeholder="Alguma observação especial para o seu pedido? (opcional)"
                   value={checkoutForm.observation}
                   onChange={(e) => setCheckoutForm({ ...checkoutForm, observation: e.target.value })}

@@ -137,14 +137,39 @@ export function Auth() {
           return;
         }
 
-        // Criar novo usuário no auth
-        const { error: signUpError } = await supabase.auth.signUp({
+        // Tentar fazer sign up
+        let { error: signUpError } = await supabase.auth.signUp({
           email: `${cleanPhone}@temp.com`,
           password: cleanPhone,
         });
 
-        if (signUpError) throw signUpError;
+        // Se o erro for de usuário já registrado, vamos fazer sign in e depois criar na tabela users
+        if (signUpError?.message === 'User already registered') {
+          const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
+            email: `${cleanPhone}@temp.com`,
+            password: cleanPhone,
+          });
 
+          if (signInError) throw signInError;
+
+          // Criar usuário na tabela users
+          const { data: newUser, error: createError } = await supabase
+            .from('users')
+            .insert([{ name: cleanName, phone: cleanPhone }])
+            .select()
+            .single();
+
+          if (createError) throw createError;
+
+          localStorage.setItem('user', JSON.stringify(newUser));
+          toast.success('Conta criada com sucesso!');
+          navigate('/');
+          return;
+        } else if (signUpError) {
+          throw signUpError;
+        }
+
+        // Se chegou aqui, é um novo usuário
         // Criar usuário na tabela users
         const { data: newUser, error: createError } = await supabase
           .from('users')
@@ -234,7 +259,7 @@ export function Auth() {
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
               <label htmlFor="name" className="block text-sm font-medium text-gray-700">
-                Nome completo
+                Primeiro Nome
               </label>
               <div className="mt-1">
                 <input
