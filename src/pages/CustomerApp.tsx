@@ -35,7 +35,8 @@ function CustomerApp() {
     address: '',
     name: '',
     phone: '',
-    tableNumber: ''
+    tableNumber: '',
+    observation: ''
   });
   const [orders, setOrders] = useState<any[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
@@ -46,6 +47,7 @@ function CustomerApp() {
   const [productVariations, setProductVariations] = useState([]);
   const [isVariationModalOpen, setIsVariationModalOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isRestaurantOpen, setIsRestaurantOpen] = useState(true);
 
   useEffect(() => {
     // Verificar se o usuário está logado
@@ -145,6 +147,42 @@ function CustomerApp() {
   }, []);
 
   useEffect(() => {
+    // Verificar status do restaurante
+    const checkRestaurantStatus = async () => {
+      const { data, error } = await supabase
+        .from('restaurant_settings')
+        .select('is_open')
+        .single();
+      
+      if (!error && data) {
+        setIsRestaurantOpen(data.is_open);
+      }
+    };
+
+    checkRestaurantStatus();
+
+    // Inscrever-se para atualizações em tempo real
+    const subscription = supabase
+      .channel('restaurant_status')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'restaurant_settings'
+        },
+        (payload) => {
+          setIsRestaurantOpen(payload.new.is_open);
+        }
+      )
+      .subscribe();
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, []);
+
+  useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       const userMenu = document.getElementById('user-menu-button');
       const dropdown = document.getElementById('user-menu-dropdown');
@@ -241,6 +279,10 @@ function CustomerApp() {
   };
 
   const handleAddToCart = async (product) => {
+    if (!isRestaurantOpen) {
+      toast.error('O restaurante está fechado no momento. Tente novamente mais tarde.');
+      return;
+    }
     // Buscar variações do produto
     const { data: variations } = await supabase
       .from('product_variations')
@@ -324,7 +366,8 @@ function CustomerApp() {
             delivery_type: checkoutForm.deliveryType,
             status: 'pending',
             total: cart.total(checkoutForm.deliveryType === 'delivery'),
-            user_id: session.user.id // Adiciona o ID do usuário autenticado
+            user_id: session.user.id, // Adiciona o ID do usuário autenticado
+            observation: checkoutForm.observation // Novo campo
           }
         ])
         .select()
@@ -366,7 +409,8 @@ function CustomerApp() {
         phone: '',
         address: '',
         deliveryType: 'pickup',
-        tableNumber: ''
+        tableNumber: '',
+        observation: ''
       });
 
     } catch (error) {
@@ -612,6 +656,19 @@ function CustomerApp() {
         )}
       </div>
 
+      {/* Aviso de restaurante fechado */}
+      {!isRestaurantOpen && (
+        <div className="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-4 mx-4 mt-4">
+          <div className="flex items-center">
+            <Clock className="h-5 w-5 mr-2" />
+            <p>
+              <span className="font-bold">Restaurante fechado!</span> No momento não estamos aceitando novos pedidos.
+              Você pode visualizar nosso cardápio, mas novos pedidos só poderão ser feitos quando reabrirmos.
+            </p>
+          </div>
+        </div>
+      )}
+
       {/* Cart Modal */}
       {isCartOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-50 z-50">
@@ -854,6 +911,22 @@ function CustomerApp() {
                   />
                 </div>
               )}
+
+              <div className="mb-4">
+                <label htmlFor="observation" className="block text-sm font-medium text-gray-700 mb-1">
+                  Observações do Pedido
+                </label>
+                <textarea
+                  id="observation"
+                  name="observation"
+                  rows={3}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500"
+                  placeholder="Alguma observação especial para o seu pedido? (opcional)"
+                  value={checkoutForm.observation}
+                  onChange={(e) => setCheckoutForm({ ...checkoutForm, observation: e.target.value })}
+                />
+              </div>
+
               <div className="border-t pt-4 mt-6">
                 <div className="flex flex-col gap-2">
                   <div className="flex justify-between items-center">

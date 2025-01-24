@@ -56,7 +56,7 @@ export function Auth() {
   const navigate = useNavigate();
 
   // Função para formatar o telefone enquanto digita
-  const handlePhoneChange = (value: string) => {
+  const handlePhoneChange = (value: string, field: 'main' | 'forgot') => {
     // Formata o número conforme digita: (99) 99999-9999
     const cleaned = value.replace(/\D/g, '');
     let formatted = cleaned;
@@ -69,7 +69,11 @@ export function Auth() {
       formatted = `(${cleaned.slice(0, 2)}) ${cleaned.slice(2)}`;
     }
     
-    setPhone(formatted);
+    if (field === 'main') {
+      setPhone(formatted);
+    } else {
+      setForgotPhone(formatted);
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -128,7 +132,8 @@ export function Auth() {
           .single();
 
         if (existingUser) {
-          toast.error('Este número de telefone já está cadastrado');
+          toast.error('Este número de telefone já está cadastrado. Por favor, faça login ou use outro número.');
+          setIsLogin(true); // Muda para a tela de login automaticamente
           return;
         }
 
@@ -255,7 +260,7 @@ export function Auth() {
                   type="tel"
                   required
                   value={phone}
-                  onChange={(e) => handlePhoneChange(e.target.value)}
+                  onChange={(e) => handlePhoneChange(e.target.value, 'main')}
                   placeholder="(00) 00000-0000"
                   maxLength={15}
                   className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-red-500 focus:border-red-500"
@@ -323,7 +328,7 @@ export function Auth() {
                   id="forgotPhone"
                   type="tel"
                   value={forgotPhone}
-                  onChange={(e) => handlePhoneChange(e.target.value)}
+                  onChange={(e) => handlePhoneChange(e.target.value, 'forgot')}
                   placeholder="(00) 00000-0000"
                   maxLength={15}
                   className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-red-500 focus:border-red-500"

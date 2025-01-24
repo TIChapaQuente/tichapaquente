@@ -20,6 +20,7 @@ function AdminDashboard() {
   const [statusFilter, setStatusFilter] = useState('all');
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [showSettings, setShowSettings] = useState(false);
+  const [isRestaurantOpen, setIsRestaurantOpen] = useState(true);
   const { isSoundEnabled, toggleSound } = useSoundStore();
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const settingsRef = useRef<HTMLDivElement | null>(null);
@@ -123,6 +124,7 @@ function AdminDashboard() {
                 address,
                 delivery_type,
                 total,
+                observation,
                 order_items!inner (
                   id,
                   quantity,
@@ -160,6 +162,19 @@ function AdminDashboard() {
       )
       .subscribe();
 
+    const fetchRestaurantStatus = async () => {
+      const { data, error } = await supabase
+        .from('restaurant_settings')
+        .select('is_open')
+        .single();
+      
+      if (!error && data) {
+        setIsRestaurantOpen(data.is_open);
+      }
+    };
+
+    fetchRestaurantStatus();
+
     return () => {
       ordersSubscription.unsubscribe();
     };
@@ -180,6 +195,7 @@ function AdminDashboard() {
           address,
           delivery_type,
           total,
+          observation,
           order_items!inner (
             id,
             quantity,
@@ -445,35 +461,32 @@ function AdminDashboard() {
             `}
           </div>
 
-          <div class="footer">
-            <div class="divider"></div>
-            <p>Agradecemos a preferência!</p>
-            <p>${new Date().toLocaleDateString('pt-BR')}</p>
-          </div>
-
-          <div class="no-print" style="margin-top: 20px; text-align: center;">
-            <button onclick="window.print(); setTimeout(() => { window.close(); window.opener.document.location.reload(); }, 500);" style="
-              padding: 8px 16px;
-              background: #000;
-              color: #fff;
-              border: none;
-              border-radius: 4px;
-              cursor: pointer;
-            ">Imprimir</button>
-          </div>
-
-          <script>
-            window.onafterprint = function() {
-              window.close();
-              window.opener.document.location.reload();
-            };
-          </script>
+          ${order.observation ? `
+            <div class="observation">
+              <p><strong>OBSERVAÇÕES:</strong> ${order.observation}</p>
+            </div>
+          ` : ''}
         </body>
       </html>
     `;
 
     printWindow.document.write(printContent);
     printWindow.document.close();
+    printWindow.print();
+  };
+
+  const toggleRestaurantStatus = async () => {
+    const newStatus = !isRestaurantOpen;
+    const { error } = await supabase
+      .from('restaurant_settings')
+      .upsert({ id: 1, is_open: newStatus });
+
+    if (error) {
+      toast.error('Erro ao alterar o status do restaurante');
+    } else {
+      setIsRestaurantOpen(newStatus);
+      toast.success(newStatus ? 'Restaurante aberto!' : 'Restaurante fechado!');
+    }
   };
 
   const filteredOrders = orders.filter(order => {
@@ -583,31 +596,22 @@ function AdminDashboard() {
                 </button>
 
                 {showSettings && (
-                  <div className="absolute right-0 top-12 w-64 bg-white rounded-lg shadow-lg border p-4 z-50">
-                    <div className="flex flex-col gap-4">
-                      <div className="flex justify-between items-center">
-                        <span className="text-sm font-medium">Notificações Sonoras</span>
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            toggleSound();
-                          }}
-                          className={`p-2 rounded-lg ${
-                            isSoundEnabled ? 'text-green-500' : 'text-gray-400'
-                          }`}
-                        >
-                          {isSoundEnabled ? <Bell className="w-5 h-5" /> : <BellOff className="w-5 h-5" />}
-                        </button>
-                      </div>
+                  <div className="absolute right-4 top-16 w-56 bg-white rounded-md shadow-lg z-50">
+                    <div className="p-2">
                       <button
-                        onClick={() => {
-                          navigate('/');
-                          localStorage.removeItem('token');
-                        }}
-                        className="flex items-center gap-2 text-red-500 hover:text-red-700"
+                        onClick={() => toggleSound()}
+                        className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-md flex items-center"
                       >
-                        <LogOut className="w-4 h-4" />
-                        <span>Sair</span>
+                        {isSoundEnabled ? <Bell className="w-4 h-4 mr-2" /> : <BellOff className="w-4 h-4 mr-2" />}
+                        {isSoundEnabled ? 'Desativar Som' : 'Ativar Som'}
+                      </button>
+                      
+                      <button
+                        onClick={toggleRestaurantStatus}
+                        className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-md flex items-center"
+                      >
+                        <Clock className="w-4 h-4 mr-2" />
+                        {isRestaurantOpen ? 'Fechar Restaurante' : 'Abrir Restaurante'}
                       </button>
                     </div>
                   </div>
@@ -702,6 +706,11 @@ function AdminDashboard() {
                   <p className="text-sm text-gray-500 truncate">
                     {order.order_items.map(item => `${item.product.name}${item.variation?.size ? ` (${item.variation.size})` : ''}`).join(', ')}
                   </p>
+                  {order.observation && (
+                    <p className="text-sm text-gray-500 mt-1">
+                      <strong>Observação:</strong> {order.observation}
+                    </p>
+                  )}
                 </div>
               </div>
             </div>
@@ -717,7 +726,7 @@ function AdminDashboard() {
 
       {/* Order Details Modal */}
       {selectedOrder && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-2xl shadow-xl w-full max-w-2xl max-h-[90vh] overflow-hidden">
             <div className="flex justify-between items-center px-6 py-4 border-b">
               <div className="flex items-center gap-4">
@@ -832,6 +841,13 @@ function AdminDashboard() {
                   </div>
                 </div>
               </div>
+
+              {selectedOrder.observation && (
+                <div className="mt-4 p-3 bg-gray-50 rounded-md">
+                  <p className="text-sm font-medium text-gray-700">Observações:</p>
+                  <p className="text-sm text-gray-600 mt-1">{selectedOrder.observation}</p>
+                </div>
+              )}
             </div>
           </div>
         </div>
