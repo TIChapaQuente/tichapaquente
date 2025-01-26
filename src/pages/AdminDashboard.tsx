@@ -93,90 +93,142 @@ function AdminDashboard() {
   useEffect(() => {
     fetchOrders();
     
-    const ordersSubscription = supabase
-      .channel('orders_changes')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'orders'
-        },
-        async (payload) => {
-          if (payload.eventType === 'UPDATE') {
-            setOrders(prevOrders => 
-              prevOrders.map(order => 
-                order.id === payload.new.id 
-                  ? { ...order, ...payload.new }
-                  : order
-              )
-            );
-          } else if (payload.eventType === 'INSERT') {
-            const { data: newOrder, error } = await supabase
-              .from('orders')
-              .select(`
-                id,
-                created_at,
-                updated_at,
-                status,
-                customer_name,
-                phone,
-                address,
-                delivery_type,
-                total,
-                observation,
-                order_items!inner (
+    // Criar canal de tempo real com retry
+    const setupRealtimeSubscription = () => {
+      const channel = supabase
+        .channel('orders_changes')
+        .on(
+          'postgres_changes',
+          {
+            event: '*',
+            schema: 'public',
+            table: 'orders'
+          },
+          async (payload) => {
+            console.log('Received real-time update:', payload);
+            
+            if (payload.eventType === 'UPDATE') {
+              // Buscar o pedido atualizado completo para garantir todos os dados
+              const { data: updatedOrder, error } = await supabase
+                .from('orders')
+                .select(`
                   id,
-                  quantity,
-                  price,
-                  extras,
-                  product:products!inner (
+                  created_at,
+                  updated_at,
+                  status,
+                  customer_name,
+                  phone,
+                  address,
+                  delivery_type,
+                  total,
+                  observation,
+                  order_items!inner (
                     id,
-                    name,
-                    image_url
-                  ),
-                  variation:product_variations (
-                    id,
-                    size
+                    quantity,
+                    price,
+                    extras,
+                    product:products!inner (
+                      id,
+                      name,
+                      image_url
+                    ),
+                    variation:product_variations (
+                      id,
+                      size
+                    )
                   )
-                )
-              `)
-              .eq('id', payload.new.id)
-              .single();
+                `)
+                .eq('id', payload.new.id)
+                .single();
 
-            if (error) {
-              console.error('Erro ao buscar novo pedido:', error);
-              return;
-            }
+              if (error) {
+                console.error('Erro ao buscar pedido atualizado:', error);
+                return;
+              }
 
-            if (newOrder) {
-              setOrders(prevOrders => [newOrder, ...prevOrders]);
-              playNotificationSound();
+              if (updatedOrder) {
+                setOrders(prevOrders => 
+                  prevOrders.map(order => 
+                    order.id === updatedOrder.id 
+                      ? updatedOrder
+                      : order
+                  )
+                );
+                // Tocar som de notificação apenas se o status mudou
+                if (payload.old.status !== payload.new.status) {
+                  playNotificationSound();
+                }
+              }
+            } else if (payload.eventType === 'INSERT') {
+              const { data: newOrder, error } = await supabase
+                .from('orders')
+                .select(`
+                  id,
+                  created_at,
+                  updated_at,
+                  status,
+                  customer_name,
+                  phone,
+                  address,
+                  delivery_type,
+                  total,
+                  observation,
+                  order_items!inner (
+                    id,
+                    quantity,
+                    price,
+                    extras,
+                    product:products!inner (
+                      id,
+                      name,
+                      image_url
+                    ),
+                    variation:product_variations (
+                      id,
+                      size
+                    )
+                  )
+                `)
+                .eq('id', payload.new.id)
+                .single();
+
+              if (error) {
+                console.error('Erro ao buscar novo pedido:', error);
+                return;
+              }
+
+              if (newOrder) {
+                setOrders(prevOrders => [newOrder, ...prevOrders]);
+                playNotificationSound();
+                toast.success('Novo pedido recebido!');
+              }
+            } else if (payload.eventType === 'DELETE') {
+              setOrders(prevOrders => 
+                prevOrders.filter(order => order.id !== payload.old.id)
+              );
             }
-          } else if (payload.eventType === 'DELETE') {
-            setOrders(prevOrders => 
-              prevOrders.filter(order => order.id !== payload.old.id)
-            );
           }
-        }
-      )
-      .subscribe();
+        )
+        .subscribe((status) => {
+          console.log('Subscription status:', status);
+          
+          if (status === 'SUBSCRIBED') {
+            console.log('Successfully subscribed to real-time updates');
+          } else if (status === 'CHANNEL_ERROR') {
+            console.error('Error in real-time channel');
+            // Tentar reconectar após 5 segundos
+            setTimeout(setupRealtimeSubscription, 5000);
+          }
+        });
 
-    const fetchRestaurantStatus = async () => {
-      const { data, error } = await supabase
-        .from('restaurant_settings')
-        .select('is_open')
-        .single();
-      
-      if (!error && data) {
-        setIsRestaurantOpen(data.is_open);
-      }
+      return channel;
     };
 
-    fetchRestaurantStatus();
+    const channel = setupRealtimeSubscription();
 
+    // Cleanup function
     return () => {
-      ordersSubscription.unsubscribe();
+      channel.unsubscribe();
     };
   }, [playNotificationSound]);
 
