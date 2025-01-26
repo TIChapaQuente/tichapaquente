@@ -48,6 +48,8 @@ function CustomerApp() {
   const [isVariationModalOpen, setIsVariationModalOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isRestaurantOpen, setIsRestaurantOpen] = useState(true);
+  const [isObservationModalOpen, setIsObservationModalOpen] = useState(false);
+  const [tempOrderData, setTempOrderData] = useState(null);
 
   useEffect(() => {
     // Verificar se o usuário está logado
@@ -344,6 +346,20 @@ function CustomerApp() {
       return;
     }
 
+    // Em vez de enviar o pedido, abrimos o modal de observações
+    setTempOrderData({
+      customerName: checkoutForm.name,
+      phone: checkoutForm.phone,
+      address: checkoutForm.deliveryType === 'delivery' ? checkoutForm.address : (checkoutForm.deliveryType === 'table' ? `Mesa ${checkoutForm.tableNumber}` : null),
+      deliveryType: checkoutForm.deliveryType,
+      total: cart.total(checkoutForm.deliveryType === 'delivery'),
+      tableNumber: checkoutForm.tableNumber
+    });
+    setIsObservationModalOpen(true);
+    setIsCheckoutOpen(false);
+  };
+
+  const handleConfirmWithObservation = async (observation: string) => {
     try {
       setIsSubmitting(true);
 
@@ -360,14 +376,14 @@ function CustomerApp() {
         .from('orders')
         .insert([
           {
-            customer_name: checkoutForm.name,
-            phone: checkoutForm.phone,
-            address: checkoutForm.deliveryType === 'delivery' ? checkoutForm.address : (checkoutForm.deliveryType === 'table' ? `Mesa ${checkoutForm.tableNumber}` : null),
-            delivery_type: checkoutForm.deliveryType,
+            customer_name: tempOrderData.customerName,
+            phone: tempOrderData.phone,
+            address: tempOrderData.address,
+            delivery_type: tempOrderData.deliveryType,
             status: 'pending',
-            total: cart.total(checkoutForm.deliveryType === 'delivery'),
-            user_id: session.user.id, // Adiciona o ID do usuário autenticado
-            observation: checkoutForm.observation // Novo campo
+            total: tempOrderData.total,
+            user_id: session.user.id,
+            observation: observation
           }
         ])
         .select()
@@ -399,8 +415,8 @@ function CustomerApp() {
 
       // Limpar o carrinho e fechar o modal
       cart.clearCart();
-      setIsCheckoutOpen(false);
-      setIsCartOpen(false); // Fecha o carrinho também
+      setIsObservationModalOpen(false);
+      setIsCartOpen(false);
       toast.success('Pedido enviado com sucesso!');
       
       // Limpar o formulário
@@ -418,6 +434,7 @@ function CustomerApp() {
       toast.error('Erro ao finalizar pedido');
     } finally {
       setIsSubmitting(false);
+      setTempOrderData(null);
     }
   };
 
@@ -721,7 +738,7 @@ function CustomerApp() {
                                   setSelectedItemForExtras(item.id);
                                   setIsExtrasModalOpen(true);
                                 }}
-                                className="ml-2 px-2 py-1 bg-red-600 text-white rounded hover:bg-red-700 flex items-center gap-1"
+                                className="ml-2 px-2 py-1 bg-red-600 text-white rounded-lg hover:bg-red-700 flex items-center gap-1"
                                 title="Adicionar extras"
                               >
                                 <Plus size={16} />
@@ -912,21 +929,6 @@ function CustomerApp() {
                 </div>
               )}
 
-              <div className="mb-4">
-                <label htmlFor="observation" className="block text-sm font-medium text-gray-700 mb-1">
-                  Observações do Pedido
-                </label>
-                <textarea
-                  id="observation"
-                  name="observation"
-                  rows={3}
-                  className="w-full px-3 py-1.5 border border-gray-300 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500"
-                  placeholder="Alguma observação especial para o seu pedido? (opcional)"
-                  value={checkoutForm.observation}
-                  onChange={(e) => setCheckoutForm({ ...checkoutForm, observation: e.target.value })}
-                />
-              </div>
-
               <div className="border-t pt-4 mt-6">
                 <div className="flex flex-col gap-2">
                   <div className="flex justify-between items-center">
@@ -1007,6 +1009,50 @@ function CustomerApp() {
                     </span>
                   </button>
                 ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal de Observações do Pedido */}
+      {isObservationModalOpen && tempOrderData && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-lg w-full max-w-md">
+            <div className="p-6">
+              <h2 className="text-2xl font-bold text-red-800 mb-4">Observações do Pedido</h2>
+              
+              <div className="mb-6">
+                <p className="text-gray-600 mb-4">
+                  Adicione observações especiais para o seu pedido, como preferências de preparo ou instruções específicas.
+                </p>
+                
+                <textarea
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                  rows={4}
+                  placeholder="Digite suas observações aqui (opcional)"
+                  value={checkoutForm.observation}
+                  onChange={(e) => setCheckoutForm({ ...checkoutForm, observation: e.target.value })}
+                />
+              </div>
+
+              <div className="flex gap-4">
+                <button
+                  onClick={() => {
+                    setIsObservationModalOpen(false);
+                    setIsCheckoutOpen(true);
+                  }}
+                  className="flex-1 px-4 py-2 border border-red-600 text-red-600 rounded-lg hover:bg-red-50"
+                >
+                  Voltar
+                </button>
+                <button
+                  onClick={() => handleConfirmWithObservation(checkoutForm.observation)}
+                  disabled={isSubmitting}
+                  className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:opacity-50"
+                >
+                  {isSubmitting ? 'Enviando...' : 'Finalizar Pedido'}
+                </button>
               </div>
             </div>
           </div>
