@@ -235,9 +235,9 @@ function CustomerApp() {
     const { data } = await supabase.from('categories').select('*');
     setCategories(data || []);
     if (data) {
-      const lanchesCategory = data.find(cat => cat.name.toLowerCase() === 'lanches');
-      if (lanchesCategory) {
-        setSelectedCategory(lanchesCategory);
+      const bebidasCategory = data.find(cat => cat.name.toLowerCase() === 'bebidas');
+      if (bebidasCategory) {
+        setSelectedCategory(bebidasCategory);
       }
     }
   };
@@ -854,8 +854,8 @@ function CustomerApp() {
                     onClick={() => setCheckoutForm({ ...checkoutForm, deliveryType: 'delivery' })}
                     className={`flex flex-col items-center justify-center p-2 border rounded-lg ${
                       checkoutForm.deliveryType === 'delivery'
-                        ? 'border-red-600 bg-red-100'
-                        : 'border-gray-200'
+                        ? 'bg-red-600 text-white'
+                        : 'bg-red-100 text-red-800 hover:bg-red-200'
                     }`}
                   >
                     <Truck className={`w-5 h-5 ${
@@ -868,8 +868,8 @@ function CustomerApp() {
                     onClick={() => setCheckoutForm({ ...checkoutForm, deliveryType: 'pickup', address: '', tableNumber: '' })}
                     className={`flex flex-col items-center justify-center p-2 border rounded-lg ${
                       checkoutForm.deliveryType === 'pickup'
-                        ? 'border-red-600 bg-red-100'
-                        : 'border-gray-200'
+                        ? 'bg-red-600 text-white'
+                        : 'bg-red-100 text-red-800 hover:bg-red-200'
                     }`}
                   >
                     <Store className={`w-5 h-5 ${
@@ -882,8 +882,8 @@ function CustomerApp() {
                     onClick={() => setCheckoutForm({ ...checkoutForm, deliveryType: 'table', address: '' })}
                     className={`flex flex-col items-center justify-center p-2 border rounded-lg ${
                       checkoutForm.deliveryType === 'table'
-                        ? 'border-red-600 bg-red-100'
-                        : 'border-gray-200'
+                        ? 'bg-red-600 text-white'
+                        : 'bg-red-100 text-red-800 hover:bg-red-200'
                     }`}
                   >
                     <UtensilsCrossed className={`w-5 h-5 ${

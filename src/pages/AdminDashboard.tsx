@@ -1,9 +1,10 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { LogOut, RefreshCcw, Search, Filter, ChevronDown, UtensilsCrossed, Settings, LayoutGrid, MoreVertical, X, Clock, MapPin, CreditCard, Printer, Bell, BellOff } from 'lucide-react';
+import { LogOut, RefreshCcw, Search, Filter, ChevronDown, UtensilsCrossed, Settings, LayoutGrid, MoreVertical, X, Clock, MapPin, CreditCard, Printer, Bell, BellOff, FileText } from 'lucide-react';
 import { toast, Toaster } from 'react-hot-toast';
 import { supabase } from '../lib/supabase';
 import { useSoundStore } from '../hooks/useSound';
+import FiscalNoteModal from '../components/FiscalNoteModal';
 
 const ORDER_STATUSES = [
   { value: 'pending', label: 'Pendentes', color: 'bg-yellow-100 text-yellow-800', icon: '🟡' },
@@ -21,6 +22,7 @@ function AdminDashboard() {
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [showSettings, setShowSettings] = useState(false);
   const [isRestaurantOpen, setIsRestaurantOpen] = useState(true);
+  const [showFiscalNoteModal, setShowFiscalNoteModal] = useState(false);
   const { isSoundEnabled, toggleSound } = useSoundStore();
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const settingsRef = useRef<HTMLDivElement | null>(null);
@@ -607,7 +609,7 @@ function AdminDashboard() {
       {/* Header */}
       <div className="bg-white border-b">
         <div className="max-w-[1400px] mx-auto px-4">
-          <div className="flex justify-between items-center h-16">
+          <div className="flex justify-between items-center h-14">
             <div className="flex items-center gap-8">
               <div className="flex items-center gap-3">
                 <div className="bg-purple-500 p-2 rounded-lg">
@@ -638,6 +640,13 @@ function AdminDashboard() {
             <div className="flex items-center gap-3">
               <button className="p-2 text-gray-500 hover:text-gray-700">
                 <Search className="w-5 h-5" />
+              </button>
+              <button
+                onClick={() => setShowFiscalNoteModal(true)}
+                className="p-2 bg-white text-red-500 hover:text-red-700 rounded-full shadow-sm hover:bg-red-50 border border-red-200"
+                title="Emitir Nota Fiscal"
+              >
+                <FileText className="w-5 h-5" />
               </button>
               <div ref={settingsRef} className="relative">
                 <button
@@ -904,6 +913,12 @@ function AdminDashboard() {
           </div>
         </div>
       )}
+      
+      {/* Modal da Nota Fiscal */}
+      <FiscalNoteModal
+        isOpen={showFiscalNoteModal}
+        onClose={() => setShowFiscalNoteModal(false)}
+      />
       
       <Toaster position="top-center" />
     </div>

@@ -13,11 +13,17 @@
     "@supabase/auth-ui-react": "^0.4.7",
     "@supabase/auth-ui-shared": "^0.1.8",
     "@supabase/supabase-js": "^2.39.7",
+    "fast-xml-parser": "^4.3.2",
+    "framer-motion": "^12.0.6",
     "lucide-react": "^0.344.0",
+    "pix-utils": "^2.6.0",
+    "qrcode": "^1.5.3",
+    "qrcode.react": "^4.2.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-hot-toast": "^2.4.1",
     "react-router-dom": "^6.22.2",
+    "xml-crypto": "^5.1.1",
     "zustand": "^4.5.2"
   },
   "devDependencies": {
