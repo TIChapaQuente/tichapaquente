@@ -506,10 +506,10 @@ function AdminDashboard() {
           `).join('')}
 
           <div class="total">
-            <p style="margin: 4px 0; font-size: 16px;">SUBTOTAL: R$ ${order.total.toFixed(2)}</p>
+            <p style="margin: 4px 0; font-size: 16px;">SUBTOTAL: R$ ${(order.order_items.reduce((acc, item) => acc + (item.quantity * item.price), 0)).toFixed(2)}</p>
             ${order.delivery_type === 'delivery' ? `
               <p style="margin: 4px 0; font-size: 16px;">TAXA DE ENTREGA: R$ 3,00</p>
-              <p style="margin: 4px 0; font-size: 18px; font-weight: bold;">TOTAL: R$ ${(Number(order.total) + 3).toFixed(2)}</p>
+              <p style="margin: 4px 0; font-size: 18px; font-weight: bold;">TOTAL: R$ ${order.total.toFixed(2)}</p>
             ` : `
               <p style="margin: 4px 0; font-size: 18px; font-weight: bold;">TOTAL: R$ ${order.total.toFixed(2)}</p>
             `}
@@ -862,7 +862,7 @@ function AdminDashboard() {
                   <div className="space-y-2 text-sm">
                     <div className="flex justify-between text-gray-600">
                       <span>Subtotal</span>
-                      <span>R$ {selectedOrder.total.toFixed(2)}</span>
+                      <span>R$ {(selectedOrder.order_items.reduce((acc, item) => acc + (item.quantity * item.price), 0)).toFixed(2)}</span>
                     </div>
                     {selectedOrder.delivery_type === 'delivery' && (
                       <div className="flex justify-between text-gray-600">
@@ -872,7 +872,7 @@ function AdminDashboard() {
                     )}
                     <div className="flex justify-between font-bold text-lg pt-2 border-t">
                       <span>Total</span>
-                      <span>R$ {(selectedOrder.delivery_type === 'delivery' ? Number(selectedOrder.total) + 3 : selectedOrder.total).toFixed(2)}</span>
+                      <span>R$ {selectedOrder.total.toFixed(2)}</span>
                     </div>
                   </div>
                 </div>
@@ -887,7 +887,7 @@ function AdminDashboard() {
                   <div className="space-y-2">
                     <div className="flex justify-between text-gray-600">
                       <span>Subtotal</span>
-                      <span>R$ {selectedOrder.total.toFixed(2)}</span>
+                      <span>R$ {(selectedOrder.order_items.reduce((acc, item) => acc + (item.quantity * item.price), 0)).toFixed(2)}</span>
                     </div>
                     {selectedOrder.delivery_type === 'delivery' && (
                       <div className="flex justify-between text-gray-600">
@@ -897,7 +897,7 @@ function AdminDashboard() {
                     )}
                     <div className="flex justify-between font-bold text-lg pt-2 border-t">
                       <span>Total</span>
-                      <span>R$ {(selectedOrder.delivery_type === 'delivery' ? Number(selectedOrder.total) + 3 : selectedOrder.total).toFixed(2)}</span>
+                      <span>R$ {selectedOrder.total.toFixed(2)}</span>
                     </div>
                   </div>
                 </div>
