@@ -488,7 +488,6 @@ function AdminDashboard() {
             <div class="item-row">
               <div>${item.quantity}x ${item.product.name}${item.variation?.size ? ` (${item.variation.size})` : ''}</div>
               <div style="display: flex; justify-content: space-between;">
-                <span>R$ ${item.price.toFixed(2)} un</span>
                 <span>R$ ${(item.quantity * item.price).toFixed(2)}</span>
               </div>
               ${item.extras && item.extras.length > 0 ? `
@@ -575,7 +574,7 @@ function AdminDashboard() {
               {item.variation?.size && ` (${item.variation.size})`}
             </span>
             <span className="text-gray-600">
-              R$ {(item.price * item.quantity).toFixed(2)}
+              R$ {(item.quantity * item.price).toFixed(2)}
             </span>
           </div>
           {item.extras && item.extras.length > 0 && (
