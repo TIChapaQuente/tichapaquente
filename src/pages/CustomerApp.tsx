@@ -852,44 +852,46 @@ function CustomerApp() {
                   <button
                     type="button"
                     onClick={() => setCheckoutForm({ ...checkoutForm, deliveryType: 'delivery' })}
-                    className={`flex flex-col items-center justify-center p-2 border rounded-lg ${
+                    className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all ${
                       checkoutForm.deliveryType === 'delivery'
-                        ? 'bg-red-600 text-white'
-                        : 'bg-red-100 text-red-800 hover:bg-red-200'
+                        ? 'bg-red-100 text-red-700 border-2 border-red-500'
+                        : 'bg-white text-gray-600 border border-gray-200 hover:bg-gray-50'
                     }`}
                   >
-                    <Truck className={`w-5 h-5 ${
-                      checkoutForm.deliveryType === 'delivery' ? 'text-red-600' : 'text-gray-400'
-                    }`} />
-                    <span className="mt-0.5 text-xs">Entrega</span>
+                    <Truck className={
+                      checkoutForm.deliveryType === 'delivery' ? 'text-red-700' : 'text-gray-400'
+                    } size={20} />
+                    Delivery
                   </button>
+
                   <button
                     type="button"
                     onClick={() => setCheckoutForm({ ...checkoutForm, deliveryType: 'pickup', address: '', tableNumber: '' })}
-                    className={`flex flex-col items-center justify-center p-2 border rounded-lg ${
+                    className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all ${
                       checkoutForm.deliveryType === 'pickup'
-                        ? 'bg-red-600 text-white'
-                        : 'bg-red-100 text-red-800 hover:bg-red-200'
+                        ? 'bg-red-100 text-red-700 border-2 border-red-500'
+                        : 'bg-white text-gray-600 border border-gray-200 hover:bg-gray-50'
                     }`}
                   >
-                    <Store className={`w-5 h-5 ${
-                      checkoutForm.deliveryType === 'pickup' ? 'text-red-600' : 'text-gray-400'
-                    }`} />
-                    <span className="mt-0.5 text-xs">Retirada</span>
+                    <Store className={
+                      checkoutForm.deliveryType === 'pickup' ? 'text-red-700' : 'text-gray-400'
+                    } size={20} />
+                    Retirada
                   </button>
+
                   <button
                     type="button"
                     onClick={() => setCheckoutForm({ ...checkoutForm, deliveryType: 'table', address: '' })}
-                    className={`flex flex-col items-center justify-center p-2 border rounded-lg ${
+                    className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all ${
                       checkoutForm.deliveryType === 'table'
-                        ? 'bg-red-600 text-white'
-                        : 'bg-red-100 text-red-800 hover:bg-red-200'
+                        ? 'bg-red-100 text-red-700 border-2 border-red-500'
+                        : 'bg-white text-gray-600 border border-gray-200 hover:bg-gray-50'
                     }`}
                   >
-                    <UtensilsCrossed className={`w-5 h-5 ${
-                      checkoutForm.deliveryType === 'table' ? 'text-red-600' : 'text-gray-400'
-                    }`} />
-                    <span className="mt-0.5 text-xs">Mesa</span>
+                    <UtensilsCrossed className={
+                      checkoutForm.deliveryType === 'table' ? 'text-red-700' : 'text-gray-400'
+                    } size={20} />
+                    Mesa
                   </button>
                 </div>
               </div>
