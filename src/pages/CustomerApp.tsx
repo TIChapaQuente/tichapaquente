@@ -149,39 +149,7 @@ function CustomerApp() {
   }, []);
 
   useEffect(() => {
-    // Verificar status do restaurante
-    const checkRestaurantStatus = async () => {
-      const { data, error } = await supabase
-        .from('restaurant_settings')
-        .select('is_open')
-        .single();
-      
-      if (!error && data) {
-        setIsRestaurantOpen(data.is_open);
-      }
-    };
-
-    checkRestaurantStatus();
-
-    // Inscrever-se para atualizações em tempo real
-    const subscription = supabase
-      .channel('restaurant_status')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'restaurant_settings'
-        },
-        (payload) => {
-          setIsRestaurantOpen(payload.new.is_open);
-        }
-      )
-      .subscribe();
-
-    return () => {
-      subscription.unsubscribe();
-    };
+    setIsRestaurantOpen(true);
   }, []);
 
   useEffect(() => {
